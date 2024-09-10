@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <div id="main">
+        <h1>
+            Hola mi nombre es {{ name }}
+        </h1>
+        <hr>
+        <button @click="count++">
+            Tocame {{ count }}
+        </button>
+<hr>
+        <fieldset>
+            <label>
+                <input v-model='usuario'type="text" >
+            </label>
+        </fieldset>
+<hr>
+        <label>
+            <hr>
+            Su nombre es: {{ usuario }}
+        </label>
+
+        <hr>
+        <hr>
+        <input v-model='numero1'type="number"> <hr>
+        <input v-model='numero2'type="number">
+        <button v-on:click="resultado=numero1+numero2" type="button"> 
+            Sumar
+        </button>
+        <hr>
+        El resultado es: {{ resultado }}
+
+  
+
+</div>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script>
+        const { createApp, ref } = Vue
+      
+        createApp({
+          setup() {
+            const message = ref('Hello vue!')
+            let name=ref('Kevin ricardo Trujillo lopez')
+            let count=ref(0)
+            let usuario=ref('')
+            let numero1=ref('')
+            let numero2=ref('')
+            let resultado=ref(0)
+
+
+            return {
+              message,
+              name,
+              count,
+              usuario,
+              numero1,
+              numero2,
+              resultado
+            }
+          }
+        }).mount('#main')
+      </script>
+</body>
+</html>
