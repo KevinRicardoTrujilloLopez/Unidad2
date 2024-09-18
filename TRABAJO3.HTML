@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <div id="main">
+
+        
+        <form @submit.prevent="Login" v-if="!pass">
+    <fieldset>
+        email
+        <input v-model="email" type="text">
+        <hr>
+        password
+        <input v-model="password" type="text">
+        <hr>
+        <button  @click=Login>
+                ACCEDER
+        </button>
+    </fieldset>
+
+     
+  
+</form>
+<h1 v-if="pass">BIENVENIDO USUARIO</h1>
+
+
+
+
+
+
+
+
+
+
+</div>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script>
+        const { createApp, ref } = Vue
+      
+        createApp({
+          setup() {
+            let email=ref('')
+            let password=ref('')
+            let pass=ref('')
+
+            
+           
+
+
+            return {
+            email,
+            password,
+            pass
+             
+            }
+          },
+          methods:{
+          Login(){
+            fetch("users.json")
+            .then(Response =>Response.json())
+            .then(Response => {
+
+                Response.forEach((e) => {
+                    if(e.email==this.email){
+                    if(e.password == this.password){
+                        this.pass = true
+                    }
+                }
+                    
+                });
+                if(!this.pass){
+                    alert("VERIFIQUE SU USUARIO")
+                }
+               
+            })
+          }
+
+
+
+          }
+        }).mount('#main')
+      </script>
+</body>
+</html>
