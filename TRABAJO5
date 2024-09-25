@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Usuarios</title>
+    
+    <style>
+        body {
+            background: linear-gradient(135deg, #7bcf51, #3498db);
+            padding: 40px;
+            font-family: 'Arial', sans-serif;
+            color: #333;
+        }
+        .card-container {
+            max-width: 500px;
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 6px 30px rgba(0, 0, 0, 0.2);
+            margin: auto;
+        }
+        h3 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .form-label {
+            margin-top: 10px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        .form-control {
+            border: 1px solid #ced4da;
+            border-radius: 8px;
+            padding: 10px;
+            font-size: 14px;
+        }
+        .btn {
+            border-radius: 8px;
+            padding: 10px 20px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .btn-primary-custom {
+            background-color: #3498db;
+            color: #fff;
+            border: none;
+        }
+        .btn-primary-custom:hover {
+            background-color: #2980b9;
+        }
+        .btn-danger {
+            background-color: #e74c3c;
+            color: #fff;
+            border: none;
+        }
+        .btn-danger:hover {
+            background-color: #c0392b;
+        }
+        .btn-warning {
+            background-color: #f39c12;
+            color: #fff;
+            border: none;
+        }
+        .btn-warning:hover {
+            background-color: #e67e22;
+        }
+        table {
+            width: 100%;
+            margin-top: 20px;
+            border-collapse: collapse;
+            background-color: #fff;
+        }
+        th, td {
+            padding: 12px;
+            border: 1px solid #ced4da;
+            text-align: left;
+            border-radius: 8px;
+        }
+        th {
+            background-color: #3498db;
+            color: white;
+        }
+        tr:nth-child(even) {
+            background-color: #f0f0f0;
+        }
+        tr:hover {
+            background-color: #d5e5fa;
+        }
+        .alert-message {
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        .alert-error {
+            background-color: #e74c3c;
+            color: white;
+        }
+        .alert-success {
+            background-color: #2ecc71;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div class="card-container">
+            <h3>Ingreso al Sistema</h3>
+            <form>
+                <div class="mb-3">
+                    <label class="form-label">Correo Electrónico:</label>
+                    <input type="email" class="form-control" v-model="Email" placeholder="Escribe tu correo" />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Contraseña:</label>
+                    <input type="password" class="form-control" v-model="Password" placeholder="Escribe tu contraseña" />
+                </div>
+                <div class="mb-3">
+                    <button type="button" class="btn btn-primary-custom w-100" @click="performLogin">Ingresar</button>
+                </div>
+            </form>
+            <p v-if="Mensaje" :class="{'alert-error': Error, 'alert-success': !Error}" class="alert-message">
+                {{ Mensaje }}
+            </p>
+
+           
+            <button v-if="Logueado" class="btn btn-success mt-3" @click="toggleAddUserForm">Agregar Usuario</button>
+
+            <div v-if="showAddUserForm" class="mt-4"> 
+                <h4>Agregar Nuevo Usuario</h4>
+                <div class="mb-3">
+                    <label class="form-label">Nombre Completo:</label>
+                    <input v-model="newUser.name" class="form-control" placeholder="Escribe el nombre completo" />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Nombre de Usuario:</label>
+                    <input v-model="newUser.username" class="form-control" placeholder="Escribe el nombre de usuario" />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Correo Electrónico:</label>
+                    <input v-model="newUser.email" class="form-control" placeholder="Escribe el correo electrónico" />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Dirección:</label>
+                    <input v-model="newUser.address.street" class="form-control" placeholder="Escribe la dirección" />
+                </div>
+                <button class="btn btn-primary-custom" @click="addUser">Agregar Usuario</button>
+                <button class="btn btn-secondary" @click="toggleAddUserForm">Cancelar</button>
+            </div>
+
+            <table v-if="Logueado">
+                <thead>
+                    <tr>
+                        <th>Nombre Completo</th>
+                        <th>Nombre de Usuario</th>
+                        <th>Correo Electrónico</th>
+                        <th>Dirección</th>
+                        <th>Opciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="(user, idx) in userList" :key="idx">
+                        <td>{{ user.name }}</td>
+                        <td>{{ user.username }}</td>
+                        <td>{{ user.email }}</td>
+                        <td>{{ user.address.street }}</td>
+                        <td>
+                            <button class="btn btn-warning" @click="prepareEdit(idx)">Modificar</button>
+                            <button class="btn btn-danger" @click="removeUser(idx)">Eliminar</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div v-if="editar !== null" class="mt-4">
+                <h4>Modificar Usuario</h4>
+                <div class="mb-3">
+                    <label class="form-label">Nombre Completo:</label>
+                    <input v-model="editar.name" class="form-control" />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Nombre de Usuario:</label>
+                    <input v-model="editar.username" class="form-control" />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Correo Electrónico:</label>
+                    <input v-model="editar.email" class="form-control" />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Dirección:</label>
+                    <input v-model="editar.address.street" class="form-control" />
+                </div>
+                <button class="btn btn-success" @click="updateUser">Guardar Cambios</button>
+                <button class="btn btn-secondary" @click="cancelEdit">Cancelar</button>
+            </div>
+            <button v-if="Logueado" class="btn btn-danger mt-3" @click="logoutUser">Cerrar Sesión</button>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const { createApp, ref, onMounted } = Vue;
+
+        createApp({
+            setup() {
+                const Email = ref("");
+                const Password = ref("");
+                const Mensaje = ref("");
+                const Error = ref(false);
+                const Logueado = ref(false);
+                const userList = ref([]);
+                const editar = ref(null);
+                const showAddUserForm = ref(false); 
+                const newUser = ref({
+                    name: "",
+                    username: "",
+                    email: "",
+                    address: {
+                        street: ""
+                    }
+                });
+                let currentEditIndex = null;
+
+                const performLogin = async () => {
+                    Mensaje.value = "";
+
+                    try {
+                        const response = await fetch("users.json");
+                        const users = await response.json();
+
+                        const validUser = users.find(
+                            user => user.email === Email.value && user.password === Password.value
+                        );
+
+                        if (validUser) {
+                            Mensaje.value = "¡Acceso exitoso!";
+                            Error.value = false;
+                            Logueado.value = true;
+                            userList.value = users;
+                            localStorage.setItem("isLoggedIn", "true");
+                        } else {
+                            Mensaje.value = "Credenciales incorrectas. Inténtalo de nuevo.";
+                            Error.value = true;
+                        }
+                    } catch (error) {
+                        console.error("Error al cargar los datos:", error);
+                        Mensaje.value = "Problemas al conectarse al servidor.";
+                        Error.value = true;
+                    }
+                };
+
+                const removeUser = (index) => {
+                    userList.value.splice(index, 1);
+                };
+
+                const prepareEdit = (index) => {
+                    editar.value = { ...userList.value[index] };
+                    currentEditIndex = index;
+                };
+
+                const updateUser = () => {
+                    if (currentEditIndex !== null) {
+                        userList.value[currentEditIndex] = { ...editar.value };
+                        cancelEdit();
+                    }
+                };
+
+                const cancelEdit = () => {
+                    editar.value = null;
+                    currentEditIndex = null;
+                };
+
+                const toggleAddUserForm = () => {
+                    showAddUserForm.value = !showAddUserForm.value;
+                };
+
+                const addUser = () => {
+                    if (newUser.value.name && newUser.value.username && newUser.value.email && newUser.value.address.street) {
+                        userList.value.push({ ...newUser.value });
+                        newUser.value = {
+                            name: "",
+                            username: "",
+                            email: "",
+                            address: { street: "" }
+                        };
+                        showAddUserForm.value = false; 
+                    } else {
+                        Mensaje.value = "Por favor, llena todos los campos.";
+                        Error.value = true;
+                    }
+                };
+
+                const verifySession = () => {
+                    if (localStorage.getItem("isLoggedIn") === "true") {
+                        Logueado.value = true;
+                        fetch("users.json")
+                            .then(response => response.json())
+                            .then(users => {
+                                userList.value = users;
+                            });
+                    }
+                };
+
+                const logoutUser = () => {
+                    Logueado.value = false;
+                    localStorage.removeItem("isLoggedIn");
+                    Mensaje.value = "Has cerrado sesión con éxito.";
+                };
+
+                onMounted(() => {
+                    verifySession();
+                });
+
+                return {
+                    Email,
+                    Password,
+                    Mensaje,
+                    Error,
+                    Logueado,
+                    userList,
+                    performLogin,
+                    removeUser,
+                    prepareEdit,
+                    editar,
+                    updateUser,
+                    cancelEdit,
+                    logoutUser,
+                    showAddUserForm,
+                    toggleAddUserForm,
+                    newUser,
+                    addUser
+                };
+            },
+        }).mount("#app");
+    </script>
+</body>
+</html>
